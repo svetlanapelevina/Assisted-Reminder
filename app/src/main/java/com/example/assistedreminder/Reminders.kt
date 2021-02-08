@@ -2,16 +2,11 @@ package com.example.assistedreminder
 
 import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
-import androidx.room.Room
-import com.example.assistedreminder.db.AppDatabase
-import com.example.assistedreminder.db.ReminderInfo
 
 class Reminders : AppCompatActivity() {
     private lateinit var remindersListView: ListView

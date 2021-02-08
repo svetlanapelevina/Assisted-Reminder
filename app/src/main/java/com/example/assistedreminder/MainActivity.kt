@@ -2,8 +2,6 @@ package com.example.assistedreminder
 
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.os.AsyncTask
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.util.Log
@@ -16,7 +14,8 @@ import com.example.assistedreminder.db.AppDatabase
 import org.json.JSONObject
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity() : AppCompatActivity() {
+    var currentUsername: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val spName = getString(R.string.sharedPreference);
@@ -39,20 +38,28 @@ class MainActivity : AppCompatActivity() {
 
             if (username.isNotBlank() && password.isNotBlank()) {
 
-                var credentials: Map<String, String> = loadProfileData()
+                var credentials: Map<String, String> = getAllData()
 
                 if (username !in credentials.keys) {
                     Toast.makeText(this, "This user doesn't exist", Toast.LENGTH_SHORT).show()
                 } else {
-                    if (credentials[username].equals(password)) {
+                    if (checkPassword(username, password)) {
+                        currentUsername = username
+
                         applicationContext
                             .getSharedPreferences(spName, spMode)
                             .edit()
                             .putInt("LoginStatus", 1)
                             .apply()
 
+                        applicationContext
+                            .getSharedPreferences(spName, spMode)
+                            .edit()
+                            .putString("currentUsername", username)
+                            .apply()
+
                         startActivity(
-                            Intent(applicationContext, Reminders::class.java)
+                            Intent(applicationContext, Reminders::class.java).putExtra("username", currentUsername)
                         )
 
                         Toast.makeText(this, getString(R.string.login), Toast.LENGTH_SHORT).show()
@@ -70,7 +77,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         checkLoginStatus()
-
     }
 
     override fun onResume() {
@@ -87,23 +93,26 @@ class MainActivity : AppCompatActivity() {
             .getInt("LoginStatus", 0)
 
         if (loginStatus == 1) {
-            startActivity(Intent(applicationContext, Reminders::class.java))
+            startActivity(Intent(applicationContext, Reminders::class.java).putExtra("username", currentUsername))
         }
     }
 
-    private fun loadProfileData(): Map<String, String> {
+    private fun getAllData(): MutableMap<String, String> {
         val spName = getString(R.string.sharedPreference);
         val spMode = Context.MODE_PRIVATE
 
+        val logsTable = applicationContext.getSharedPreferences(spName, spMode).all as MutableMap<String, String>
+        return logsTable
+    }
+
+    private fun checkPassword(username: String, password: String): Boolean {
+        var data: Map<String, String> = getAllData()
+
+        var userData = data[username]
+
+        val credentials = JSONObject(userData)
+
         var credentialsMap: Map<String, String> = HashMap()
-
-        val credentialsJSON = applicationContext.getSharedPreferences(spName, spMode)
-            .getString(
-                "credentials", JSONObject()
-                    .toString()
-            )
-
-        val credentials = JSONObject(credentialsJSON)
 
         val keysItr = credentials.keys()
         while (keysItr.hasNext()) {
@@ -111,25 +120,6 @@ class MainActivity : AppCompatActivity() {
             credentialsMap += mapOf(key to credentials[key].toString())
         }
 
-        Toast.makeText(this, JSONObject(credentialsMap).toString(), Toast.LENGTH_SHORT).show()
-
-        return credentialsMap
-    }
-
-    private fun saveMap(inputMap: Map<String, String>) {
-        val spName = getString(R.string.sharedPreference);
-        val spMode = Context.MODE_PRIVATE
-
-        val jsonString = JSONObject(inputMap).toString()
-
-        applicationContext.getSharedPreferences(spName, spMode)
-            .edit()
-            .remove("credentials")
-            .apply()
-
-        applicationContext.getSharedPreferences(spName, spMode)
-            .edit()
-            .putString("credentials", jsonString)
-            .apply()
+        return credentialsMap["password"] == password
     }
 }
