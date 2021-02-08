@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Assisted Reminder</string>
+    <string name="singIn">Sign In</string>
+    <string name="singUp">Sign Up</string>
+    <string name="sharedPreference" translatable="false">com.example.assistedreminder</string>
+    <string name="addNew">Add New Reminder</string>
+    <string name="no_reminders">You don\'t have any reminders yet</string>
+    <string name="my_profile">My Profile</string>
+    <string name="save">Save</string>
+    <string name="dbFileName">remindersInfo</string>
+</resources>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".Reminders">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/logoutButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:rotation="180"
+            android:shadowColor="#00FFFFFF"
+            app:backgroundTint="#00FFFFFF"
+            app:icon="@drawable/exit"
+            app:iconTint="#673AB7"
+            app:iconTintMode="src_in" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            />
+
+        <Button
+            android:id="@+id/profileButton"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:shadowColor="#00FFFFFF"
+            app:backgroundTint="#00FFFFFF"
+            app:icon="@drawable/account"
+            app:iconTint="#673AB7"
+            app:iconTintMode="src_in" />
+
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/remindersList"
+        android:layout_width="match_parent"
+        android:layout_height="640dp"
+        tools:listitem="@layout/reminder_item">
+
+    </ListView>
+
+    <Button
+        android:id="@+id/addNewReminderButton"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="@string/addNew" />
+
+</LinearLayout>
