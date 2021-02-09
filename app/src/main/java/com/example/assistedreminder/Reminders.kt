@@ -22,31 +22,41 @@ class Reminders : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.logoutButton).setOnClickListener {
-            applicationContext.getSharedPreferences(
-                getString(R.string.sharedPreference),
-                Context.MODE_PRIVATE
-            ).edit().putInt("LoginStatus", 0).apply()
-
-            Toast.makeText(this, "Log out successful", Toast.LENGTH_SHORT).show()
-
-            startActivity(
-                Intent(applicationContext, MainActivity::class.java)
-            )
+            logOutUser()
         }
 
-        addNewReminder()
+        addNewReminders()
     }
 
-    fun addNewReminder() {
+    // TODO remove hardcode
+    // Add reminders to list view
+    fun addNewReminders() {
         remindersListView = findViewById<ListView>(R.id.remindersList)
 
         val reminders: ArrayList<Reminder> = arrayListOf(
             Reminder("Reminder 1", 156, 189, "13.12.2020"),
             Reminder("Reminder 2", 58, 1, "13.12.2020"),
             Reminder("Reminder 3", 151896, 2525, "13.12.2020")
-            )
+        )
 
         remindersListView.adapter = ReminderAdapter(this, reminders)
+    }
+
+    // User logout
+    private fun logOutUser() {
+        val spName = getString(R.string.sharedPreference);
+        val spMode = Context.MODE_PRIVATE
+
+        applicationContext.getSharedPreferences(spName, spMode)
+            .edit()
+            .putInt("LoginStatus", 0)
+            .apply()
+
+        Toast.makeText(this, "Log out successful", Toast.LENGTH_SHORT).show()
+
+        startActivity(
+            Intent(applicationContext, MainActivity::class.java)
+        )
     }
 
 //    fun addNewReminder() {

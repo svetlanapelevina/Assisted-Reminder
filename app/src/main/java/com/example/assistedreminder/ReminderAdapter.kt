@@ -11,10 +11,11 @@ class Reminder(
     var message: String,
     var location_x: Int,
     var location_y: Int,
-    var creation_time: String)
+    var creation_time: String
+)
 
 class ReminderAdapter(
-    private val context: Context,
+    context: Context,
     private val dataSource: ArrayList<Reminder>
 ) : BaseAdapter() {
 
@@ -47,7 +48,6 @@ class ReminderAdapter(
         locationXTextView.text = reminder.location_x.toString()
         locationYTextView.text = reminder.location_y.toString()
         timeTextView.text = reminder.creation_time
-
         //Picasso.with(context).load(reminder.imageUrl).placeholder(R.mipmap.ic_launcher).into(thumbnailImageView)
 
         return rowView
