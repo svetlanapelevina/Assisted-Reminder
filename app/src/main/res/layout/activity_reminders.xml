@@ -37,16 +37,34 @@
             android:shadowColor="#00FFFFFF"
             app:backgroundTint="#00FFFFFF"
             app:icon="@drawable/account"
-            app:iconTint="#673AB7"
+            app:iconTint="@color/standard_purple"
             app:iconTintMode="src_in" />
 
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/standard_purple"
+        android:gravity="center"
+        android:paddingTop="5dp"
+        android:text="@string/my_reminders"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ListView
         android:id="@+id/remindersList"
         android:layout_width="match_parent"
-        android:layout_height="640dp"
+        android:layout_height="600dp"
+        android:choiceMode="singleChoice"
+        android:divider="#DCDCDC"
+        android:dividerHeight="1dp"
         tools:listitem="@layout/reminder_item">
+
 
     </ListView>
 

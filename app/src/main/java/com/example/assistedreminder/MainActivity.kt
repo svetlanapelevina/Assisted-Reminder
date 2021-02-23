@@ -14,9 +14,6 @@ class MainActivity() : AppCompatActivity() {
     var currentUsername: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        val spName = getString(R.string.sharedPreference);
-        val spMode = Context.MODE_PRIVATE
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.login)
 

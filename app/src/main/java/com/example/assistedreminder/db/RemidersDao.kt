@@ -1,9 +1,6 @@
 package com.example.assistedreminder.db
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room.*
 
 @Dao
 interface RemindersDao {
@@ -11,6 +8,15 @@ interface RemindersDao {
     @Insert
     fun insert(paymentInfo: ReminderInfo): Long
 
-    @Query("SELECT * FROM remindersInfo")
-    fun getReminders(): List<ReminderInfo>
+    @Update
+    fun update(paymentInfo: ReminderInfo)
+
+    @Query("SELECT * FROM remindersInfo WHERE creator_id = :id")
+    fun getReminders(id: String): List<ReminderInfo>
+
+    @Query("SELECT * FROM remindersInfo WHERE uid = :id")
+    fun getReminderById(id: String): List<ReminderInfo>
+
+    @Query("DELETE FROM remindersInfo WHERE uid = :id")
+    fun deleteReminder(id: Int)
 }
