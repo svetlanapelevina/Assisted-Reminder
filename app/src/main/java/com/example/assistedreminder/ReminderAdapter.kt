@@ -32,15 +32,19 @@ class ReminderAdapter(context: Context, private val dataSource: List<ReminderInf
 
         val messageTextView = rowView.findViewById(R.id.message) as TextView
         val timeTextView = rowView.findViewById(R.id.time) as TextView
+        val dateTextView = rowView.findViewById(R.id.date) as TextView
         val seenSwitch = rowView.findViewById(R.id.seen) as Switch
 
         val reminder = getItem(position) as ReminderInfo
 
         messageTextView.text = reminder.message
-        timeTextView.text = reminder.reminder_time
-        seenSwitch.isChecked = reminder.reminder_seen
 
-        // change reminder_seen by clicking on Switch
+        timeTextView.text = reminder.reminder_time
+        dateTextView.text = reminder.reminder_date
+        seenSwitch.isChecked = reminder.reminder_active
+        seenSwitch.isEnabled = !reminder.reminder_seen
+
+        // change reminder_active by clicking on Switch
         rowView.findViewById<View>(R.id.seen).setOnClickListener {
             listener.changeReminderSeen(position)
         }

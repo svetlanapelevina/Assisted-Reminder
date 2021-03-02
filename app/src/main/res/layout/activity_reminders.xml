@@ -42,19 +42,22 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/standard_purple"
-        android:gravity="center"
-        android:paddingTop="5dp"
-        android:text="@string/my_reminders"
-        android:textColor="#FFFFFF"
-        android:textSize="24sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="wrap_content">
+
+        <ToggleButton
+            android:id="@+id/showAllRemndersToggleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@color/standard_purple"
+            android:textColor="#FFFFFF"
+            android:textOff="past reminders"
+            android:textOn="all reminders" />
+    </LinearLayout>
+
+
 
     <ListView
         android:id="@+id/remindersList"

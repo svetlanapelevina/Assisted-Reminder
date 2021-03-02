@@ -12,6 +12,7 @@
         android:id="@+id/message"
         android:layout_width="48dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="10dp"
         android:layout_marginTop="20dp"
         android:layout_weight="1"
@@ -19,50 +20,42 @@
         android:textSize="18sp" />
 
     <TextView
-        android:id="@+id/time"
-        android:layout_width="0dp"
+        android:id="@+id/date"
+        android:layout_width="67dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="10dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:layout_weight="1"
+        android:gravity="right"
+        android:text="12.12.2020"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/time"
+        android:layout_width="19dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
+        android:layout_weight="1"
+        android:gravity="right"
         android:text="@string/_00_00"
-        android:textSize="18sp"
-        android:gravity="right" />
+        android:textSize="18sp" />
+
 
     <Switch
         android:id="@+id/seen"
-        android:layout_width="0dp"
+        android:layout_width="15dp"
         android:layout_height="wrap_content"
+        android:layout_gravity="center"
         android:layout_margin="10dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="40dp"
         android:layout_marginRight="40dp"
         android:layout_marginBottom="20dp"
         android:layout_weight="1" />
-
-    <!--    <Button-->
-<!--        android:id="@+id/reminder_edit"-->
-<!--        style="@style/Widget.AppCompat.Button.Borderless"-->
-<!--        android:layout_width="65dp"-->
-<!--        android:layout_height="65dp"-->
-<!--        android:layout_marginTop="10dp"-->
-<!--        android:shadowColor="#00FFFFFF"-->
-<!--        app:backgroundTint="#00FFFFFF"-->
-<!--        app:icon="@drawable/edit"-->
-<!--        app:iconTint="#673AB7"-->
-<!--        app:iconTintMode="src_in"-->
-<!--        android:layout_weight="1"/>-->
-
-<!--    <Button-->
-<!--        android:id="@+id/reminder_delete"-->
-<!--        style="@style/Widget.AppCompat.Button.Borderless"-->
-<!--        android:layout_width="65dp"-->
-<!--        android:layout_height="65dp"-->
-<!--        android:layout_marginTop="10dp"-->
-<!--        app:icon="@drawable/delete"-->
-<!--        app:iconTint="#673AB7"-->
-<!--        app:iconTintMode="src_in"-->
-<!--        android:layout_weight="1"/>-->
 
 </LinearLayout>

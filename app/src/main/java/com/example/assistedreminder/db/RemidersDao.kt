@@ -12,7 +12,10 @@ interface RemindersDao {
     fun update(paymentInfo: ReminderInfo)
 
     @Query("SELECT * FROM remindersInfo WHERE creator_id = :id")
-    fun getReminders(id: String): List<ReminderInfo>
+    fun getAllReminders(id: String): List<ReminderInfo>
+
+    @Query("SELECT * FROM remindersInfo WHERE creator_id = :id AND reminder_seen = :seen")
+    fun getSeenReminders(id: String, seen: Boolean = true): List<ReminderInfo>
 
     @Query("SELECT * FROM remindersInfo WHERE uid = :id")
     fun getReminderById(id: String): List<ReminderInfo>

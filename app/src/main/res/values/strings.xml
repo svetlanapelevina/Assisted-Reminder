@@ -18,4 +18,5 @@
     <string name="notification">Notification</string>
     <string name="time">Time</string>
     <string name="my_reminders">My Reminders</string>
+    <string name="date">Date</string>
 </resources>

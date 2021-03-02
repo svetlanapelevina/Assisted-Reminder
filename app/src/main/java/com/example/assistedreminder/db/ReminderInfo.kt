@@ -13,7 +13,9 @@ data class ReminderInfo (
     @ColumnInfo(name = "location_x") var location_x: Int,
     @ColumnInfo(name = "location_y") var location_y: Int,
     @ColumnInfo(name = "reminder_time") var reminder_time: String,
+    @ColumnInfo(name = "reminder_date") var reminder_date: String,
     @ColumnInfo(name = "creation_time") var creation_time: String,
     @ColumnInfo(name = "creator_id") var creator_id: String,
+    @ColumnInfo(name = "reminder_active") var reminder_active: Boolean,
     @ColumnInfo(name = "reminder_seen") var reminder_seen: Boolean
 )
