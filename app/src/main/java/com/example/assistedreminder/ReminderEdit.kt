@@ -1,21 +1,41 @@
 package com.example.assistedreminder
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.PendingIntent
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.AsyncTask
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.*
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.room.Room
 import com.example.assistedreminder.db.AppDatabase
 import com.example.assistedreminder.db.ReminderInfo
+import com.google.android.gms.location.*
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import java.util.*
 
 class ReminderEdit : AppCompatActivity() {
     lateinit var timePicker: TimePickerHelper
     lateinit var datePicker: DatePickerHelper
+    var MY_REQUEST_CODE: Int = 1
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var geofencingClient: GeofencingClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_reminder_edit)
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        geofencingClient = LocationServices.getGeofencingClient(this)
 
         findViewById<TextView>(R.id.reminderTopTitle).text = "Edit Reminder"
         findViewById<Button>(R.id.reminderBottomButton).text = "Save"
@@ -35,6 +55,26 @@ class ReminderEdit : AppCompatActivity() {
 
         findViewById<EditText>(R.id.reminderDate).setOnClickListener {
             showDatePickerDialog()
+        }
+
+        findViewById<EditText>(R.id.reminderLocation).setOnClickListener {
+            startActivityForResult(
+                Intent(applicationContext, MapActivity::class.java)
+                    .putExtra("uid", getCurrentReminderUid()),
+                MY_REQUEST_CODE
+            )
+        }
+        findViewById<EditText>(R.id.reminderLocation).isFocusable = false
+    }
+
+    // get location after map activity and set it to the EditText
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == MY_REQUEST_CODE) {
+                if (data != null)
+                    findViewById<EditText>(R.id.reminderLocation).setText(data.getStringExtra("location"));
+            }
         }
     }
 
@@ -75,10 +115,8 @@ class ReminderEdit : AppCompatActivity() {
         val uid: String = getCurrentReminderUid()
 
         val message: String = findViewById<TextView>(R.id.reminderMessage).text.toString()
-        val locationX: String =
-            findViewById<TextView>(R.id.reminderLocationX).text.toString()
-        val locationY: String =
-            findViewById<TextView>(R.id.reminderLocationY).text.toString()
+        val location: String =
+            findViewById<TextView>(R.id.reminderLocation).text.toString()
         val time: String = findViewById<TextView>(R.id.reminderTime).text.toString()
         val date: String = findViewById<TextView>(R.id.reminderDate).text.toString();
 
@@ -87,7 +125,7 @@ class ReminderEdit : AppCompatActivity() {
             return
         }
 
-        if ((time.isBlank() || date.isBlank()) && (locationX.isBlank() || locationY.isBlank())) {
+        if ((time.isBlank() || date.isBlank()) && (location.isBlank())) {
             Toast.makeText(this, "Fill in location or time ", Toast.LENGTH_SHORT).show()
             return
         }
@@ -112,14 +150,37 @@ class ReminderEdit : AppCompatActivity() {
                 reminder.reminder_date = date
             }
 
-            reminder.location_x = if (locationX.isNotBlank()) locationX.toInt() else 0
-            reminder.location_y = if (locationX.isNotBlank()) locationX.toInt() else 0
+            reminder.reminder_active = true
+            reminder.reminder_seen = false
+
+            val locationParts =
+                if (location.isNotBlank()) location.split(" ").toTypedArray() else null
+            reminder.location_x =
+                if (locationParts != null && locationParts[0].isNotBlank()) locationParts[0].toDouble() else 0.0
+            reminder.location_y =
+                if (locationParts != null && locationParts[1].isNotBlank()) locationParts[1].toDouble() else 0.0
             remindersDao.update(reminder)
 
             deleteOldNotificationJob(uid.toInt())
+            ReminderAddNew.removeGeofence(applicationContext, reminder.key)
 
             if (reminder.reminder_active) {
-                createNotificationJob(date, time, uid.toInt(), message)
+                createNotificationJob(
+                    date,
+                    time,
+                    uid.toInt(),
+                    message,
+                    reminder.location_x,
+                    reminder.location_y,
+                    reminder.key
+                )
+            }
+
+            val database = Firebase.database
+            val reference = database.getReference("reminders")
+            if (reminder.key.isNotBlank()) {
+                val firebaseReminder = reference.child(reminder.key)
+                firebaseReminder.setValue(reminder)
             }
         }
 
@@ -128,8 +189,12 @@ class ReminderEdit : AppCompatActivity() {
     }
 
     // create notification
-    private fun createNotificationJob(date: String, time: String, uuid: Int, message: String) {
-        if (date.isNotBlank()) {
+    private fun createNotificationJob(date: String, time: String, uuid: Int, message: String,
+        locationX: Double, locationY: Double, key: String) {
+
+        val locationSet = locationX != 0.0 && locationY != 0.0
+
+        if (date.isNotBlank() && !locationSet) {
             //convert date  string value to Date format using dd.mm.yyyy
             // here it is assumed that date is in dd.mm.yyyy
             val dateparts = date.split(".").toTypedArray()
@@ -150,6 +215,19 @@ class ReminderEdit : AppCompatActivity() {
                 message
             )
         }
+
+        if (locationSet) {
+            ReminderAddNew.removeGeofence(applicationContext, key)
+            val position = LatLng(locationX, locationY)
+            ReminderAddNew.createGeoFence(
+                applicationContext,
+                this@ReminderEdit,
+                position,
+                key,
+                uuid.toString(),
+                geofencingClient
+            )
+        }
     }
 
     private fun deleteOldNotificationJob(uid: Int) {
@@ -164,6 +242,7 @@ class ReminderEdit : AppCompatActivity() {
     }
 
     // retrieve reminder data from DB
+    @SuppressLint("SetTextI18n")
     private fun retrieveReminderData() {
         val uid: String = getCurrentReminderUid()
 
@@ -179,9 +258,8 @@ class ReminderEdit : AppCompatActivity() {
             val reminder: ReminderInfo = remindersDao.getReminderById(uid).get(0)
 
             findViewById<EditText>(R.id.reminderMessage).setText(reminder.message)
-            if (reminder.location_x != 0 && reminder.location_y != 0) {
-                findViewById<EditText>(R.id.reminderLocationX).setText(reminder.location_x.toString())
-                findViewById<EditText>(R.id.reminderLocationY).setText(reminder.location_x.toString())
+            if (reminder.location_x != 0.0 && reminder.location_y != 0.0) {
+                findViewById<EditText>(R.id.reminderLocation).setText("${reminder.location_x} ${reminder.location_y}")
             }
             findViewById<EditText>(R.id.reminderTime).setText(reminder.reminder_time)
             findViewById<EditText>(R.id.reminderDate).setText(reminder.reminder_date)

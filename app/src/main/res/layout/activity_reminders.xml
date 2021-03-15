@@ -30,6 +30,17 @@
             />
 
         <Button
+            android:id="@+id/fakeGPS"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
+            android:shadowColor="#00FFFFFF"
+            app:backgroundTint="#00FFFFFF"
+            app:icon="@drawable/location"
+            app:iconTint="#673AB7"
+            app:iconTintMode="src_in" />
+
+        <Button
             android:id="@+id/profileButton"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="65dp"

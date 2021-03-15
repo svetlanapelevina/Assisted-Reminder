@@ -39,7 +39,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reminderLocationY" />
+        app:layout_constraintTop_toBottomOf="@+id/reminderLocation" />
 
     <EditText
         android:id="@+id/reminderDate"
@@ -57,37 +57,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reminderLocationY" />
+        app:layout_constraintTop_toBottomOf="@+id/reminderLocation" />
 
     <EditText
-        android:id="@+id/reminderLocationX"
-        android:layout_width="95dp"
-        android:layout_height="wrap_content"
+        android:id="@+id/reminderLocation"
+        android:layout_width="235dp"
+        android:layout_height="47dp"
         android:layout_marginStart="100dp"
         android:layout_marginLeft="100dp"
         android:layout_marginTop="20dp"
         android:layout_marginEnd="100dp"
         android:layout_marginRight="100dp"
+        android:ellipsize="end"
         android:ems="10"
         android:hint="Location"
-        android:inputType="number"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/reminderMessage" />
-
-    <EditText
-        android:id="@+id/reminderLocationY"
-        android:layout_width="95dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginLeft="100dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="100dp"
-        android:layout_marginRight="100dp"
-        android:ems="10"
-        android:hint="Location"
-        android:inputType="number"
+        android:maxLines="1"
+        android:singleLine="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -124,14 +109,5 @@
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/reminderTime" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="."
-        android:textSize="24sp"
-        tools:layout_editor_absoluteX="202dp"
-        tools:layout_editor_absoluteY="307dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

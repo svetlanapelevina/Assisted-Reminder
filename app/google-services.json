@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "783177467970",
+    "firebase_url": "https://reminders-307112-default-rtdb.firebaseio.com",
+    "project_id": "reminders-307112",
+    "storage_bucket": "reminders-307112.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:783177467970:android:1b787e8a669ad16c6485db",
+        "android_client_info": {
+          "package_name": "com.example.assistedreminder"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "783177467970-nmu8dd51mh9f9keft4bf8oj67u8e48tr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCa4pNMCbDBlXK7_lYCx9-P5stb1pf5Lec"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "783177467970-nmu8dd51mh9f9keft4bf8oj67u8e48tr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

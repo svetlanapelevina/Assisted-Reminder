@@ -1,8 +1,6 @@
 package com.example.assistedreminder
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.os.AsyncTask
 import androidx.room.Room
 import androidx.work.Worker
 import androidx.work.WorkerParameters

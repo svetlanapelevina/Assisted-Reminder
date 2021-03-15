@@ -1,16 +1,23 @@
 package com.example.assistedreminder
 
+import android.app.Activity
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
-import android.media.MediaPlayer
+import android.location.Location
+import android.location.LocationManager
 import android.os.AsyncTask
 import android.os.Build
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.*
+import android.os.SystemClock
+import android.widget.Button
+import android.widget.ListView
+import android.widget.Toast
+import android.widget.ToggleButton
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.room.Room
 import androidx.work.Data
@@ -18,6 +25,12 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.assistedreminder.db.AppDatabase
 import com.example.assistedreminder.db.ReminderInfo
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.GeofencingClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.ktx.database
+import com.google.firebase.ktx.Firebase
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.random.Random
@@ -25,6 +38,10 @@ import kotlin.random.Random
 class Reminders : AppCompatActivity() {
     private lateinit var remindersListView: ListView
     private var showAllReminders: Boolean = false
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var geofencingClient: GeofencingClient
+    var MY_REQUEST_CODE: Int = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +73,13 @@ class Reminders : AppCompatActivity() {
             logOutUser()
         }
 
+        findViewById<Button>(R.id.fakeGPS).setOnClickListener {
+            startActivityForResult(
+                Intent(applicationContext, MapActivity::class.java),
+                MY_REQUEST_CODE
+            )
+        }
+
         findViewById<Button>(R.id.addNewReminderButton).setOnClickListener {
             startActivity(
                 Intent(applicationContext, ReminderAddNew::class.java)
@@ -66,6 +90,9 @@ class Reminders : AppCompatActivity() {
             showAllReminders = isChecked
             refreshRemindersListView(showAllReminders)
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        geofencingClient = LocationServices.getGeofencingClient(this)
     }
 
     // User logout
@@ -109,10 +136,18 @@ class Reminders : AppCompatActivity() {
                     db.remindersDao().deleteReminder(selectedReminder.uid!!)
                 }
 
+                refreshRemindersListView(showAllReminders)
+
+                // delete from Firebase database
+                val database = Firebase.database
+                val reference1 = database.getReference("reminders")
+                if (selectedReminder.key.isNotBlank()) {
+                    reference1.child(selectedReminder.key).removeValue()
+                }
+
                 // cancel pending time based reminder
                 cancelReminder(applicationContext, selectedReminder.uid!!)
-
-                refreshRemindersListView(showAllReminders)
+                ReminderAddNew.removeGeofence(applicationContext, selectedReminder.key)
             }
             .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
@@ -169,11 +204,10 @@ class Reminders : AppCompatActivity() {
                 if (remindersInfo.isNotEmpty()) {
                     val adaptor = ReminderAdapter(applicationContext, remindersInfo, this@Reminders)
                     remindersListView.adapter = adaptor
-                } else {
-                    remindersListView.adapter = null
-                    Toast.makeText(applicationContext, "No reminders now", Toast.LENGTH_SHORT)
-                        .show()
                 }
+            } else {
+                remindersListView.adapter = null
+                Toast.makeText(applicationContext, "No reminders now", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -181,11 +215,6 @@ class Reminders : AppCompatActivity() {
     // change reminder_active by change Switch in the reminders list
     fun changeReminderSeen(position: Int) {
         val selectedReminder = remindersListView.adapter.getItem(position) as ReminderInfo
-
-        if (selectedReminder.reminder_seen) {
-            Toast.makeText(this, "You can\'t activate past reminder ", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         selectedReminder.reminder_active = !selectedReminder.reminder_active
 
@@ -201,24 +230,46 @@ class Reminders : AppCompatActivity() {
             remindersDao.update(selectedReminder);
         }
 
+        val database = Firebase.database
+        val reference = database.getReference("reminders")
+        if (selectedReminder.key.isNotBlank()) {
+            val firebaseReminder = reference.child(selectedReminder.key)
+            firebaseReminder.setValue(selectedReminder)
+        }
+
         // add or delete notification job
         if (selectedReminder.reminder_active) {
-            createNotificationJob(
-                selectedReminder.reminder_date,
-                selectedReminder.reminder_time,
-                selectedReminder.uid!!,
-                selectedReminder.message
-            )
+
+            if (selectedReminder.location_x == 0.0) {
+                createNotificationJob(
+                    selectedReminder.reminder_date,
+                    selectedReminder.reminder_time,
+                    selectedReminder.uid!!,
+                    selectedReminder.message
+                )
+            } else {
+                val positionLatLng = LatLng(selectedReminder.location_x, selectedReminder.location_y)
+                ReminderAddNew.createGeoFence(
+                    applicationContext,
+                    this@Reminders,
+                    positionLatLng,
+                    selectedReminder.key,
+                    selectedReminder.uid.toString(),
+                    geofencingClient
+                )
+            }
+
             Toast.makeText(this, "Reminder is on", Toast.LENGTH_SHORT).show()
         } else {
             cancelReminder(applicationContext, selectedReminder.uid!!)
+
+            ReminderAddNew.removeGeofence(applicationContext, selectedReminder.key)
+
             Toast.makeText(this, "Reminder is off", Toast.LENGTH_SHORT).show()
         }
     }
 
     companion object {
-        //val paymenthistoryList = mutableListOf<PaymentInfo>()
-
         fun showNofitication(context: Context, message: String) {
             val CHANNEL_ID = "REMINDER_APP_NOTIFICATION_CHANNEL"
             var notificationId = Random.nextInt(10, 1000) + 5
@@ -305,4 +356,58 @@ class Reminders : AppCompatActivity() {
             )
         }
     }
+
+    // get location after map activity and set it to the EditText
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK) {
+            if (requestCode == MY_REQUEST_CODE) {
+                val locationParts = data?.getStringExtra("location")?.split(" ")
+                val x = locationParts?.get(0)?.toDouble()
+                val y = locationParts?.get(1)?.toDouble()
+
+                if (isMockLocationEnabled()) {
+                    setMock(x!!, y!!)
+                }
+            }
+        }
+    }
+
+    private fun isMockLocationEnabled(): Boolean {
+        return true
+    }
+
+    // create mock location by the coordinates
+    private fun setMock(latitude: Double, longitude: Double) {
+        var mLocationManager: LocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+        if (!mLocationManager.isLocationEnabled) {
+            mLocationManager.addTestProvider(
+                LocationManager.GPS_PROVIDER,
+                false,
+                false,
+                false,
+                false,
+                true,
+                true,
+                true,
+                0,
+                3
+            )
+            mLocationManager.setTestProviderEnabled(LocationManager.GPS_PROVIDER, true);
+        }
+
+        val mockLocation = Location(LocationManager.GPS_PROVIDER)
+        mockLocation.latitude = latitude
+        mockLocation.longitude = longitude
+        mockLocation.accuracy = 3f
+        mockLocation.time = System.currentTimeMillis()
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
+            mockLocation.elapsedRealtimeNanos = SystemClock.elapsedRealtimeNanos()
+        }
+
+        mLocationManager.setTestProviderLocation(LocationManager.GPS_PROVIDER, mockLocation)
+    }
+
 }
